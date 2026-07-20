@@ -1,0 +1,120 @@
+create table cities(
+    id_city   number(3)    constraint city_id_pk primary key,
+    name_city varchar2(20) constraint city_name_not_null not null
+);
+
+----------------------------------------------------------------
+create table locations(
+    id_location number(3)    constraint loc_id_pk primary key,
+    address     varchar2(40) constraint loc_add_not_null not null,
+    id_city     number(3),
+    constraint fk_city foreign key (id_city) references cities(id_city)
+);
+
+-----------------------------------------------------------------------
+create table hospitals(
+    id_hospital    number(3)    constraint hos_id_pk primary key,
+    name_hospital  varchar2(20) constraint hos_name_notnull not null,
+    creation_date  date         constraint hos_date_notnull not null,
+    id_location    number(3),
+    constraint fk_location foreign key (id_location) references locations(id_location)
+);
+
+------------------------------------------------------------------
+create table departments(
+    id_department   number(3)    constraint dep_id_pk primary key,
+    name_department varchar2(20) constraint dep_name_notnull not null,
+    id_hospital     number(3),
+    id_manager      number(3),
+    constraint fk_hospital foreign key (id_hospital) references hospitals(id_hospital)
+);
+
+------------------------------------------------------------------
+create table jobs(
+    id_job     number(3)    constraint job_id_pk primary key,
+    title_job  varchar2(20) constraint job_title_notnull not null,
+    max_salary number(10,2) constraint job_max_salary_notnull not null, 
+    min_salary number(10,2) constraint job_min_salary_notnull not null  
+);
+
+---------------------------------------------------------------------
+create table employees(
+    id_employee   number(3)    constraint emp_id_pk primary key,
+    id_department number(3),
+    id_job        number(3),
+    id_manager    number(3),
+    first_name    varchar2(20) constraint emp_first_name_notnull not null,
+    last_name     varchar2(20) constraint emp_last_name_notnull not null,
+    hire_date     date         constraint emp_date not null,
+    salary        number(10,2),
+    email         varchar2(30) constraint emp_email_un unique,
+    address       varchar2(50),
+    constraint fk_dep     foreign key (id_department) references departments(id_department),
+    constraint fk_job     foreign key (id_job)        references jobs(id_job),
+    constraint fk_manager foreign key (id_manager)    references employees(id_employee) 
+);
+
+-----------------------------------------------------------------------
+create table patients(
+    id_patient     number(3)    constraint patient_id_pk primary key,
+    first_name     varchar2(20) constraint pat_fname_notnull not null,
+    last_name      varchar2(20) constraint pat_lname_notnull not null,
+    age            number(3)    constraint pat_age_notnull not null,
+    phone_number   number(10)   constraint pat_phone_uniq unique,
+    address        varchar2(50) constraint pat_add_notnull not null,
+    date_of_birth  date         not null,
+    the_condition  varchar2(50) constraint pat_cond_notnull not null  
+);
+
+-----------------------------------------------------------------------
+create table specializations(
+    id_specialization   number(3)    constraint spec_id_pk primary key,
+    name_specialization varchar2(20) constraint spec_name_not_null not null 
+);
+
+-----------------------------------------------------------------------
+create table doctors(
+    id_employee       number(3)    constraint pk_emp primary key,
+    degree            varchar2(20) constraint doct_degree_notnull not null,
+    years_experience  number(3,1)  constraint doct_years_exp_notnull not null,
+    id_specialization number(3),
+    constraint fk_spec     foreign key (id_specialization) references specializations(id_specialization),
+    constraint fk_employee foreign key (id_employee)       references employees(id_employee)
+);
+
+--------------------------------------------------------------------------
+create table appointments(
+    id_appointment   number(3) constraint appointment_pk primary key,
+    date_appointment date      constraint app_date_not_null not null,
+    appointment_time timestamp,
+    id_doctor        number(3),
+    id_patient       number(3),
+    constraint fk_doctor  foreign key (id_doctor)  references doctors(id_employee),
+    constraint fk_patient foreign key (id_patient) references patients(id_patient)
+);
+
+-------------------------------------------------------------------------
+create table rooms(
+    id_room          number(3) constraint id_room_pk primary key,
+    number_room      number(3) constraint num_room_un unique,
+    id_department    number(3),
+    maximum_capacity number(3) constraint max_cap_not_null not null,
+    minimum_capacity number(3) constraint min_cap_not_null not null,
+    constraint fk_dep_room foreign key (id_department) references departments(id_department)
+);
+
+-------------------------------------------------------------------------------
+create table accommodations(
+    id_accommodation number(3) constraint id_accom_pk primary key,
+    id_patient       number(3),
+    id_room          number(3),
+    exit_time        timestamp,
+    entry_time       timestamp constraint accom_entry_not_null not null,
+    constraint fk_patient_acc foreign key (id_patient) references patients(id_patient),
+    constraint fk_room_acc    foreign key (id_room)    references rooms(id_room)
+);
+
+--------------------------------------------------------------------------------------
+--add constranint forgin key to table department to coulm manager 
+ALTER TABLE departments 
+add CONSTRAINT fk_manager FOREIGN KEY (id_manager) REFERENCES employees(id_employee);
