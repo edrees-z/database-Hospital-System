@@ -1,0 +1,698 @@
+----------------------------------------------------------------
+create table cities(
+    id_city   number(3)    constraint city_id_pk primary key,
+    name_city varchar2(20) constraint city_name_not_null not null
+);
+
+----------------------------------------------------------------
+create table locations(
+    id_location number(3)    constraint loc_id_pk primary key,
+    address     varchar2(40) constraint loc_add_not_null not null,
+    id_city     number(3),
+    constraint fk_city foreign key (id_city) references cities(id_city) ON DELETE CASCADE
+);
+
+-----------------------------------------------------------------------
+create table hospitals(
+    id_hospital    number(3)    constraint hos_id_pk primary key,
+    name_hospital  varchar2(20) constraint hos_name_notnull not null,
+    creation_date  date         constraint hos_date_notnull not null,
+    id_location    number(3),
+    constraint fk_location foreign key (id_location) references locations(id_location) ON DELETE CASCADE
+);
+
+------------------------------------------------------------------
+create table departments(
+    id_department   number(3)    constraint dep_id_pk primary key,
+    name_department varchar2(20) constraint dep_name_notnull not null,
+    id_hospital     number(3),
+    constraint fk_hospital foreign key (id_hospital) references hospitals(id_hospital) ON DELETE CASCADE
+);
+
+------------------------------------------------------------------
+create table jobs(
+    id_job     number(3)    constraint job_id_pk primary key,
+    title_job  varchar2(20) constraint job_title_notnull not null,
+    max_salary number(10,2) constraint job_max_salary_notnull not null, 
+    min_salary number(10,2) constraint job_min_salary_notnull not null  
+);
+
+---------------------------------------------------------------------
+create table employees(
+    id_employee   number(3)    constraint emp_id_pk primary key,
+    id_department number(3),
+    id_job        number(3),
+    id_manager    number(3),
+    first_name    varchar2(20) constraint emp_first_name_notnull not null,
+    last_name     varchar2(20) constraint emp_last_name_notnull not null,
+    hire_date     date         constraint emp_date not null,
+    salary        number(10,2),
+    email         varchar2(30) constraint emp_email_un unique,
+    address       varchar2(50),
+    constraint fk_dep     foreign key (id_department) references departments(id_department) ON DELETE CASCADE, 
+    constraint fk_job     foreign key (id_job)        references jobs(id_job) ON DELETE CASCADE ,
+    constraint fk_manager foreign key (id_manager)    references employees(id_employee) 
+);
+
+-----------------------------------------------------------------------
+create table patients(
+    id_patient     number(3)    constraint patient_id_pk primary key,
+    first_name     varchar2(20) constraint pat_fname_notnull not null,
+    last_name      varchar2(20) constraint pat_lname_notnull not null,
+    age            number(3)    constraint pat_age_notnull not null,
+    phone_number   number(10)   constraint pat_phone_uniq unique,
+    address        varchar2(50) constraint pat_add_notnull not null,
+    date_of_birth  date         not null,
+    the_condition  varchar2(50) constraint pat_cond_notnull not null  
+);
+
+-----------------------------------------------------------------------
+create table specializations(
+    id_specialization   number(3)    constraint spec_id_pk primary key,
+    name_specialization varchar2(20) constraint spec_name_not_null not null 
+);
+
+-----------------------------------------------------------------------
+create table doctors(
+    id_employee       number(3)    constraint pk_emp primary key,
+    degree            varchar2(20) constraint doct_degree_notnull not null,
+    years_experience  number(3,1)  constraint doct_years_exp_notnull not null,
+    id_specialization number(3),
+    constraint fk_spec     foreign key (id_specialization) references specializations(id_specialization) ON DELETE CASCADE,
+    constraint fk_employee foreign key (id_employee)       references employees(id_employee) ON DELETE CASCADE
+);
+
+--------------------------------------------------------------------------
+create table appointments(
+    id_appointment   number(3) constraint appointment_pk primary key,
+    date_appointment date      constraint app_date_not_null not null,
+    appointment_time timestamp,
+    id_doctor        number(3),
+    id_patient       number(3),
+    constraint fk_doctor  foreign key (id_doctor)  references doctors(id_employee) ON DELETE CASCADE,
+    constraint fk_patient foreign key (id_patient) references patients(id_patient) ON DELETE CASCADE
+);
+
+-------------------------------------------------------------------------
+create table rooms(
+    id_room          number(3) constraint id_room_pk primary key,
+    number_room      number(3) constraint num_room_un unique,
+    id_department    number(3),
+    maximum_capacity number(3) constraint max_cap_not_null not null,
+    minimum_capacity number(3) constraint min_cap_not_null not null,
+    constraint fk_dep_room foreign key (id_department) references departments(id_department) ON DELETE CASCADE
+);
+
+-------------------------------------------------------------------------------
+create table accommodations(
+    id_accommodation number(3) constraint id_accom_pk primary key,
+    id_patient       number(3),
+    id_room          number(3),
+    exit_time        timestamp,
+    entry_time       timestamp constraint accom_entry_not_null not null,
+    constraint fk_patient_acc foreign key (id_patient) references patients(id_patient) ON DELETE CASCADE,
+    constraint fk_room_acc    foreign key (id_room)    references rooms(id_room) ON DELETE CASCADE
+);
+
+--------------------------------------------------------------------------------------
+
+---create sequance to patients  
+CREATE SEQUENCE id_patient_seq
+    START WITH 1      
+    INCREMENT BY 1   ;
+    
+-------------------------------
+
+--add value to row in table cities 
+
+INSERT INTO cities(id_city , name_city) values (1 , 'Gaza' );
+INSERT INTO cities(id_city , name_city) values (2 , 'der_albalah' );
+
+
+--add value to row in table locations
+insert into locations(id_location,address,id_city)
+values (11 , 'alnaseer' , 1);
+
+insert into locations(id_location,address,id_city) 
+values (21 , 'alballd' , 2);
+
+--add value to row in table  hospitals
+INSERT INTO hospitals(id_hospital , name_hospital , creation_date , id_location) values
+(111,'alshfa' ,sysdate,11);
+
+INSERT INTO hospitals(id_hospital , name_hospital , creation_date , id_location) values
+(221,'alaqsa' ,sysdate,21);
+
+--add value to row in table department 
+INSERT into departments(id_department , name_department , id_hospital)
+VALUES (112 , 'Emergency Department' , 111);
+
+INSERT into departments(id_department , name_department , id_hospital)
+VALUES (113 , 'Intensive Care Unit' , 111);
+
+INSERT into departments(id_department , name_department , id_hospital)
+VALUES (114 , 'Internal Medicine' , 111);
+
+INSERT into departments(id_department , name_department , id_hospital) 
+VALUES (115 , 'Pediatrics' , 111);
+
+INSERT into departments(id_department , name_department , id_hospital) 
+VALUES (116 , 'Orthopedics' , 111);
+
+INSERT into departments(id_department , name_department , id_hospital)
+VALUES (117 , 'Administration' , 111);
+
+INSERT into departments(id_department , name_department , id_hospital) 
+VALUES (118 , 'Reception' , 111);
+
+INSERT into departments(id_department , name_department , id_hospital) 
+VALUES (119 , 'Cardiology' , 111);
+
+
+
+--------------------------------------------------------------------------------------------------------------
+----add value to row in table departments
+INSERT INTO departments (id_department, name_department, id_hospital) 
+VALUES (222, 'Emergency Department', 221);
+
+INSERT INTO departments (id_department, name_department, id_hospital) 
+VALUES (223, 'Intensive Care Unit', 221);
+
+INSERT INTO departments (id_department, name_department, id_hospital) 
+VALUES (224, 'Internal Medicine', 221);
+
+INSERT INTO departments (id_department, name_department, id_hospital) 
+VALUES (225, 'Radiology', 221);
+
+INSERT INTO departments (id_department, name_department, id_hospital) 
+VALUES (226, 'Ophthalmology', 221);
+
+INSERT INTO departments (id_department, name_department, id_hospital) 
+VALUES (227, 'Administration', 221);
+
+INSERT INTO departments (id_department, name_department, id_hospital) 
+VALUES (228, 'Reception & Admissions', 221);
+
+----add value to row in table jobs
+
+INSERT INTO jobs (id_job, title_job, min_salary, max_salary) 
+VALUES (10, 'Hospital Director', 9000, 25000);
+
+INSERT INTO jobs (id_job, title_job, min_salary, max_salary) 
+VALUES (1, 'Doctor', 8000, 25000);
+
+INSERT INTO jobs (id_job, title_job, min_salary, max_salary) 
+VALUES (2, 'Nurse', 4000, 10000);
+
+INSERT INTO jobs (id_job, title_job, min_salary, max_salary) 
+VALUES (3, 'Radiologist', 3000, 9000);
+
+INSERT INTO jobs (id_job, title_job, min_salary, max_salary) 
+VALUES (4, 'Receptionist', 2000, 5000);
+
+INSERT INTO jobs (id_job, title_job, min_salary, max_salary) 
+VALUES (5, 'Paramedic', 2000, 5000);
+
+-------
+
+
+----add value to row in table employees
+--employee manager hospital 111
+
+insert into employees(first_name,last_name,id_employee, id_department, id_job, hire_date, salary, email, address) 
+VALUES('Mohammad', 'Abu Salmiya', 100, 117, 10, sysdate, 7000, 'mohamedausal@palestine.com', 'Gaza - Al-Rimal District');
+
+insert into employees(first_name,last_name,id_employee, id_department, id_job, hire_date, salary, id_manager, email, address) 
+VALUES('Ahmed', 'Al-Masr', 102, 119, 1, sysdate, 5000, 100, 'ahmedalmas@palestine.com', 'Gaza - Tel Al-Hawa');
+
+insert into employees(first_name,last_name,id_employee, id_department, id_job, hire_date, salary, id_manager, email, address) 
+VALUES('Sarah', 'Mansour', 103, 113, 1, sysdate, 5000, 100, 'SarahMansour@palestine.com', 'Gaza - Al-Nasr Neighborhood');
+
+insert into employees(first_name,last_name,id_employee, id_department, id_job, hire_date, salary, id_manager, email, address) 
+VALUES('Mohammed', 'Ahmed', 104, 116, 1, sysdate, 5500, 100, 'Mohammedahmed@palestine.com', 'Gaza - Al-Jalaa Street');
+
+insert into employees(first_name,last_name,id_employee, id_department, id_job, hire_date, salary, id_manager, email, address) 
+VALUES('Laila', 'Lulu', 105, 112, 1, sysdate, 5000, 100, 'Lailalulu@palestine.com', 'Gaza - Sheikh Radwan');
+
+insert into employees(first_name,last_name,id_employee, id_department, id_job, hire_date, salary, id_manager, email, address) 
+VALUES('Ibrahim', 'Khalil', 106, 114, 1, sysdate, 5000, 100, 'IbrahimKhalil@palestine.com', 'Gaza - Al-Sabra District');
+
+insert into employees(first_name,last_name,id_employee, id_department, id_job, hire_date, salary, id_manager, email, address) 
+VALUES('Khaled', 'Al-Najjar', 107, 118, 4, sysdate, 3000, 100, 'KhaledAl-Najjar@palestine.com', 'Gaza - Tal AL-HAWA');
+
+insert into employees(first_name,last_name,id_employee, id_department, id_job, hire_date, salary, id_manager, email, address) 
+VALUES('ali', 'al-morjan', 108, 115, 1, sysdate, 5500, 100, 'ali-almorjan@palestine.com', 'Gaza - Tal AL-HAWA');
+
+--employee in hospital 111
+
+--101
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (201, 119, 2, 102, 'Sami', 'Mansour', SYSDATE, 4500, 'mansour201@palestine.com', 'Gaza - Al-Rimal');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (202, 119, 2, 102, 'Hala', 'Ouda', SYSDATE, 4200, 'ouda202@palestine.com', 'Deir Al-Balah - Al-Hakir');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (203, 119, 5, 102, 'Karam', 'Ziyad', SYSDATE, 3100, 'ziyad203@palestine.com', 'Gaza - Al-Nasr');
+
+--103
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (204, 113, 2, 103, 'Yousef', 'Hassan', SYSDATE, 4600, 'hassan204@palestine.com', 'Gaza - Tel Al-Hawa');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (205, 113, 2, 103, 'Noor', 'Abdelhadi', SYSDATE, 4400, 'abdelhadi205@palestine.com', 'Deir Al-Balah - Al-Balad');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (206, 113, 2, 103, 'Amani', 'Salem', SYSDATE, 4500, 'salem206@palestine.com', 'Gaza - Al-Sabra');
+
+-- 104
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (207, 116, 2, 104, 'Anas', 'Jaber', SYSDATE, 4300, 'jaber207@palestine.com', 'Gaza - Al-Jalaa St');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (208, 116, 1, 104, 'Mona', 'Zaki', SYSDATE, 8200, 'zaki208@palestine.com', 'Deir Al-Balah - Coastal Road');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (209, 116, 2, 104, 'Tarek', 'Amir', SYSDATE, 4100, 'amir209@palestine.com', 'Gaza - Al-Zaytoun');
+
+-- 105
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (210, 112, 5, 105, 'Bilal', 'Kassab', SYSDATE, 3200, 'kassab210@palestine.com', 'Deir Al-Balah - Al-Baraka');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (211, 112, 2, 105, 'Reem', 'Haddad', SYSDATE, 4000, 'haddad211@palestine.com', 'Gaza - Sheikh Radwan');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (212, 112, 2, 105, 'Aya', 'Bashir', SYSDATE, 4100, 'bashir212@palestine.com', 'Gaza - Al-Daraj');
+
+
+-- 106
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (213, 114, 1, 106, 'Lina', 'Kahlout', SYSDATE, 8100, 'kahlout213@palestine.com', 'Gaza - Al-Abbas');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (214, 114, 2, 106, 'Zaid', 'Nabil', SYSDATE, 4400, 'nabil214@palestine.com', 'Deir Al-Balah - Al-Bassa');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (215, 114, 4, 106, 'Sara', 'Wafi', SYSDATE, 2200, 'wafi215@palestine.com', 'Gaza - Al-Nasr');
+
+
+-- 118 
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (216, 118, 4, 107, 'Salma', 'Rizq', SYSDATE, 2400, 'rizq216@palestine.com', 'Deir Al-Balah - Al-Mashal');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (217, 118, 4, 107, 'Fadi', 'Amir', SYSDATE, 2300, 'amir217@palestine.com', 'Gaza - Al-Mina');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (218, 118, 5, 107, 'Tamer', 'Hegazi', SYSDATE, 3000, 'hegazi218@palestine.com', 'Deir Al-Balah - Al-Istiqama');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (220, 115, 2, 108, 'Huda', 'Zaid', SYSDATE, 4200, 'zaid220@palestine.com', 'Deir Al-Balah - Al-Baraka');
+
+--115
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (221, 115, 4, 108, 'Ramy', 'Kassab', SYSDATE, 2500, 'kassab221@palestine.com', 'Gaza - Sheikh Radwan');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (222, 115, 2, 108, 'Mona', 'Haddad', SYSDATE, 4100, 'haddad222@palestine.com', 'Deir Al-Balah - Al-Hakir');
+
+
+--manager hospital 221
+
+INSERT INTO employees (id_employee, id_department, id_job, first_name, last_name, hire_date, salary, email, address) 
+VALUES (200, 227, 10, 'Iyad', 'Abu_Zaid', sysdate, 9500, 'abu_zaid400@palestine.com', 'Deir Al-Balah - Al-Baraka');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (201, 222, 1, 200, 'Basem', 'Naeem', sysdate, 8200, 'naeem401@palestine.com', 'Gaza - Al-Rimal');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (202, 223, 1, 200, 'Siham', 'Al-Louh', sysdate, 8300, 'louh402@palestine.com', 'Deir Al-Balah - Al-Hakir');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (203, 224, 1, 200, 'Yasser', 'Zorob', sysdate, 8100, 'zorob403@palestine.com', 'Gaza - Tel Al-Hawa');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (204, 225, 3, 200, 'Kamal', 'Tabekh', sysdate, 5500, 'tabekh404@palestine.com', 'Deir Al-Balah - Al-Balad');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (205, 226, 1, 200, 'Ayman', 'Sahbani', sysdate, 7900, 'sahbani405@palestine.com', 'Gaza - Al-Nasr');
+
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (206, 228, 4, 200, 'Nadia', 'Sultan', sysdate, 3500, 'sultan406@palestine.com', 'Deir Al-Balah - Coastal Road');
+
+-----employees hospital 221
+
+--------------------------------------------------------------------------------
+
+--201
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (410, 222, 2, 201, 'Yazan', 'Hamad', sysdate, 4300, 'hamad410@palestine.com', 'Deir Al-Balah - Al-Baraka');
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (411, 222, 5, 201, 'Amir', 'Nasser', sysdate, 3100, 'nasser411@palestine.com', 'Gaza - Sheikh Radwan');
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (412, 222, 2, 201, 'Mona', 'Ayyash', sysdate, 4200, 'ayyash412@palestine.com', 'Deir Al-Balah - Al-Hakir');
+---223
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (413, 223, 2, 202, 'Khaled', 'Saidi', sysdate, 4600, 'saidi413@palestine.com', 'Gaza - Al-Nasr');
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (414, 223, 1, 202, 'Rana', 'Wafi', sysdate, 8800, 'wafi414@palestine.com', 'Deir Al-Balah - Al-Balad');
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (415, 223, 2, 202, 'Omar', 'Jaber', sysdate, 4400, 'jaber415@palestine.com', 'Gaza - Tel Al-Hawa');
+---224
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (416, 224, 1, 203 , 'Hala', 'Fayed', sysdate, 8200, 'fayed416@palestine.com', 'Gaza - Al-Rimal');
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (417, 224, 2, 203, 'Sami', 'Radi', sysdate, 4500, 'radi417@palestine.com', 'Deir Al-Balah - Coastal Road');
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (418, 224, 4, 203, 'Ola', 'Issa', sysdate, 2300, 'issa418@palestine.com', 'Gaza - Al-Zaytoun');
+---225
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (419, 225, 3, 204, 'Tarek', 'Hegazi', sysdate, 4800, 'hegazi419@palestine.com', 'Deir Al-Balah - Al-Mashal');
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (420, 225, 3, 204, 'Lina', 'Mansour', sysdate, 4700, 'mansour420@palestine.com', 'Gaza - Al-Sabra');
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (421, 225, 2, 204, 'Bilal', 'Kassab', sysdate, 4200, 'kassab421@palestine.com', 'Deir Al-Balah - Al-Baraka');
+--226
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (422, 226, 1, 205, 'Zaid', 'Dahlan', sysdate, 8100, 'dahlan422@palestine.com', 'Gaza - Al-Jalaa St');
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (423, 226, 2, 205, 'Iman', 'Fares', sysdate, 4100, 'fares423@palestine.com', 'Deir Al-Balah - Al-Sumairi');
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (424, 226, 4, 205, 'Anas', 'Ouda', sysdate, 2200, 'ouda424@palestine.com', 'Gaza - Beach Camp');
+--227
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (425, 228, 4, 206, 'Salma', 'Bakr', sysdate, 2400, 'bakr425@palestine.com', 'Deir Al-Balah - Al-Hakir');
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (426, 228, 4, 206, 'Karam', 'Sarsour', sysdate, 2300, 'sarsour426@palestine.com', 'Gaza - Shuja''iyya');
+INSERT INTO employees (id_employee, id_department, id_job, id_manager, first_name, last_name, hire_date, salary, email, address) 
+VALUES (427, 228, 5, 206, 'Noor', 'Abdelhadi', sysdate, 3000, 'abdelhadi427@palestine.com', 'Deir Al-Balah - Al-Istiqama');
+
+
+
+
+
+--add column and constranint forgin key to table department to coulmn manager
+ALTER TABLE departments 
+ADD id_manager NUMBER(3);
+ALTER TABLE departments 
+add CONSTRAINT fk_manager FOREIGN KEY (id_manager) REFERENCES employees(id_employee) ON DELETE CASCADE;
+
+
+--- add manager to departments
+
+--- add manager to departments in hospital 111
+UPDATE departments
+SET id_manager = 100
+WHERE id_department = 117;
+
+UPDATE departments
+SET id_manager = 102
+WHERE id_department = 119;
+
+UPDATE departments
+SET id_manager = 103
+WHERE id_department = 113;
+
+UPDATE departments 
+SET id_manager = 104
+WHERE id_department = 116;
+
+UPDATE departments 
+SET id_manager = 105
+WHERE id_department = 112;
+
+UPDATE departments 
+SET id_manager = 106 
+WHERE id_department = 114;
+
+UPDATE departments 
+SET id_manager = 107 
+WHERE id_department = 118;
+
+UPDATE departments 
+SET id_manager = 108 
+WHERE id_department = 115;
+
+------- add manager to departments in hospital 221
+
+UPDATE departments 
+SET id_manager = 200 
+WHERE id_department = 227;
+
+UPDATE departments 
+SET id_manager = 201
+WHERE id_department = 222;
+
+UPDATE departments 
+SET id_manager = 202 
+WHERE id_department = 223;
+
+UPDATE departments 
+SET id_manager = 203 
+WHERE id_department = 224;
+
+UPDATE departments
+SET id_manager = 204
+WHERE id_department = 225;
+
+UPDATE departments 
+SET id_manager = 205 
+WHERE id_department = 226;
+
+UPDATE departments 
+SET id_manager = 206 
+WHERE id_department = 228;
+
+
+--------------------------------------------------------------------------------
+---add vaule to table specializations
+
+
+
+INSERT INTO specializations (id_specialization, name_specialization) 
+VALUES (1, 'Cardiology');      
+INSERT INTO specializations (id_specialization, name_specialization)
+VALUES (2, 'Pediatrics');       
+INSERT INTO specializations (id_specialization, name_specialization)
+VALUES (3, 'Orthopedics');      
+INSERT INTO specializations (id_specialization, name_specialization) 
+VALUES (4, 'Internal Medicine');
+INSERT INTO specializations (id_specialization, name_specialization)
+VALUES (5, 'Ophthalmology');   
+INSERT INTO specializations (id_specialization, name_specialization)
+VALUES (6, 'Radiology');       
+INSERT INTO specializations (id_specialization, name_specialization) 
+VALUES (7, 'Emergency Care');   
+INSERT INTO specializations (id_specialization, name_specialization)
+VALUES (8, 'Administration');  
+
+
+
+--add value to table dector 
+--------------------------------------------------------------------------------
+
+INSERT INTO doctors (id_employee, degree, years_experience, id_specialization) 
+VALUES (100, 'PhD', 26.0, 8); 
+
+INSERT INTO doctors (id_employee, degree, years_experience, id_specialization) 
+VALUES (102, 'Consultant', 16.5, 1);
+
+INSERT INTO doctors (id_employee, degree, years_experience, id_specialization) 
+VALUES (103, 'Specialist', 12.0, 7); 
+
+INSERT INTO doctors (id_employee, degree, years_experience, id_specialization) 
+VALUES (104, 'Master', 10.5, 3);
+
+INSERT INTO doctors (id_employee, degree, years_experience, id_specialization) 
+VALUES (105, 'Specialist', 9.0, 7);
+
+INSERT INTO doctors (id_employee, degree, years_experience, id_specialization) 
+VALUES (106, 'Consultant', 21.0, 4);
+
+INSERT INTO doctors (id_employee, degree, years_experience, id_specialization) 
+VALUES (108, 'Master', 8.5, 2);
+
+
+---------------------------------------------------------
+--hospital 221
+
+
+INSERT INTO doctors (id_employee, degree, years_experience, id_specialization) 
+VALUES (200, 'PhD', 23.0, 8);
+
+INSERT INTO doctors (id_employee, degree, years_experience, id_specialization) 
+VALUES (201, 'Consultant', 19.0, 7);
+
+INSERT INTO doctors (id_employee, degree, years_experience, id_specialization) 
+VALUES (202, 'Specialist', 14.5, 7);
+
+INSERT INTO doctors (id_employee, degree, years_experience, id_specialization) 
+VALUES (203, 'Master', 11.0, 4);
+
+INSERT INTO doctors (id_employee, degree, years_experience, id_specialization) 
+VALUES (205, 'Specialist', 13.0, 5);
+
+-------------------------------------------------------
+
+--add value to table patients
+
+INSERT INTO patients (id_patient, first_name, last_name, age, phone_number, address, date_of_birth, the_condition) 
+VALUES ( id_patient_seq.NEXTVAL , 'Sami', 'Hassan', 45, 0599111222, 'Gaza - Al-Rimal District', TO_DATE('1981-03-18', 'YYYY-MM-DD'), 'Hypertension');
+
+INSERT INTO patients (id_patient, first_name, last_name, age, phone_number, address, date_of_birth, the_condition) 
+VALUES ( id_patient_seq.NEXTVAL, 'Mona', 'Ouda', 28, 0599111333, 'Gaza - Tel Al-Hawa', TO_DATE('1998-05-10', 'YYYY-MM-DD'), 'Asthma');
+
+INSERT INTO patients (id_patient, first_name, last_name, age, phone_number, address, date_of_birth, the_condition) 
+VALUES ( id_patient_seq.NEXTVAL, 'Karam', 'Ziyad', 33, 0599111444, 'Gaza - Al-Nasr Neighborhood', TO_DATE('1993-11-20', 'YYYY-MM-DD'), 'Diabetes');
+
+INSERT INTO patients (id_patient, first_name, last_name, age, phone_number, address, date_of_birth, the_condition) 
+VALUES ( id_patient_seq.NEXTVAL, 'Heba', 'Salem', 52, 0599111555, 'Gaza - Al-Jalaa Street', TO_DATE('1974-01-05', 'YYYY-MM-DD'), 'Cardiac Arrhythmia');
+
+
+INSERT INTO patients (id_patient, first_name, last_name, age, phone_number, address, date_of_birth, the_condition) 
+VALUES ( id_patient_seq.NEXTVAL, 'Anas', 'Jaber', 22, 0599222111, 'Deir Al-Balah - Al-Baraka', TO_DATE('2004-06-12', 'YYYY-MM-DD'), 'Bone Fracture');
+
+INSERT INTO patients (id_patient, first_name, last_name, age, phone_number, address, date_of_birth, the_condition) 
+VALUES ( id_patient_seq.NEXTVAL, 'Noor', 'Abdelhadi', 29, 0599222333, 'Deir Al-Balah - Al-Hakir', TO_DATE('1997-09-15', 'YYYY-MM-DD'), 'Pregnancy Check-up');
+
+INSERT INTO patients (id_patient, first_name, last_name, age, phone_number, address, date_of_birth, the_condition) 
+VALUES ( id_patient_seq.NEXTVAL, 'Tarek', 'Amir', 40, 0599222444, 'Deir Al-Balah - Al-Balad', TO_DATE('1986-02-28', 'YYYY-MM-DD'), 'Kidney Stones');
+
+INSERT INTO patients (id_patient, first_name, last_name, age, phone_number, address, date_of_birth, the_condition) 
+VALUES ( id_patient_seq.NEXTVAL, 'Lina', 'Kahlout', 19, 0599222555, 'Deir Al-Balah - Coastal Road', TO_DATE('2007-12-10', 'YYYY-MM-DD'), 'Migraine');
+
+
+--add value to  Appointments
+
+
+--------------------------------------------------------------------------------
+
+
+-- مواعيد مستشفى الشفاء (أطباء الشفاء: 100, 102, 103, 104, 108)
+INSERT INTO appointments (id_appointment, date_appointment, appointment_time, id_doctor, id_patient) 
+VALUES (501, TO_DATE('2026-03-20', 'YYYY-MM-DD'), TO_TIMESTAMP('2026-03-20 09:00:00', 'YYYY-MM-DD HH24:MI:SS'), 102, 301);
+
+INSERT INTO appointments (id_appointment, date_appointment, appointment_time, id_doctor, id_patient) 
+VALUES (502, TO_DATE('2026-03-20', 'YYYY-MM-DD'), TO_TIMESTAMP('2026-03-20 10:30:00', 'YYYY-MM-DD HH24:MI:SS'), 108, 302);
+
+INSERT INTO appointments (id_appointment, date_appointment, appointment_time, id_doctor, id_patient) 
+VALUES (503, TO_DATE('2026-03-21', 'YYYY-MM-DD'), TO_TIMESTAMP('2026-03-21 11:00:00', 'YYYY-MM-DD HH24:MI:SS'), 104, 303);
+
+INSERT INTO appointments (id_appointment, date_appointment, appointment_time, id_doctor, id_patient) 
+VALUES (504, TO_DATE('2026-03-21', 'YYYY-MM-DD'), TO_TIMESTAMP('2026-03-21 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), 103, 304);
+
+INSERT INTO appointments (id_appointment, date_appointment, appointment_time, id_doctor, id_patient) 
+VALUES (505, TO_DATE('2026-03-22', 'YYYY-MM-DD'), TO_TIMESTAMP('2026-03-22 08:30:00', 'YYYY-MM-DD HH24:MI:SS'), 201, 305);
+
+INSERT INTO appointments (id_appointment, date_appointment, appointment_time, id_doctor, id_patient) 
+VALUES (506, TO_DATE('2026-03-22', 'YYYY-MM-DD'), TO_TIMESTAMP('2026-03-22 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 202, 306);
+
+INSERT INTO appointments (id_appointment, date_appointment, appointment_time, id_doctor, id_patient) 
+VALUES (507, TO_DATE('2026-03-23', 'YYYY-MM-DD'), TO_TIMESTAMP('2026-03-23 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 203, 307);
+
+INSERT INTO appointments (id_appointment, date_appointment, appointment_time, id_doctor, id_patient) 
+VALUES (508, TO_DATE('2026-03-23', 'YYYY-MM-DD'), TO_TIMESTAMP('2026-03-23 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), 205, 308);
+
+INSERT INTO appointments (id_appointment, date_appointment, appointment_time, id_doctor, id_patient) 
+VALUES (509, TO_DATE('2026-03-24', 'YYYY-MM-DD'), TO_TIMESTAMP('2026-03-24 09:15:00', 'YYYY-MM-DD HH24:MI:SS'), 102, 303);
+
+INSERT INTO appointments (id_appointment, date_appointment, appointment_time, id_doctor, id_patient) 
+VALUES (510, TO_DATE('2026-03-24', 'YYYY-MM-DD'), TO_TIMESTAMP('2026-03-24 11:45:00', 'YYYY-MM-DD HH24:MI:SS'), 202, 301);
+
+
+----------------
+--add value to table room
+
+INSERT INTO rooms (id_room, number_room, id_department, maximum_capacity, minimum_capacity) 
+VALUES (601, 101, 112, 10, 1); 
+
+INSERT INTO rooms (id_room, number_room, id_department, maximum_capacity, minimum_capacity) 
+VALUES (602, 102, 113, 2, 1); 
+
+INSERT INTO rooms (id_room, number_room, id_department, maximum_capacity, minimum_capacity) 
+VALUES (603, 103, 115, 4, 1);  
+
+INSERT INTO rooms (id_room, number_room, id_department, maximum_capacity, minimum_capacity) 
+VALUES (604, 104, 117, 1, 1);  
+
+
+INSERT INTO rooms (id_room, number_room, id_department, maximum_capacity, minimum_capacity) 
+VALUES (605, 201, 222, 8, 1);   
+
+INSERT INTO rooms (id_room, number_room, id_department, maximum_capacity, minimum_capacity) 
+VALUES (606, 202, 223, 3, 1);   
+
+INSERT INTO rooms (id_room, number_room, id_department, maximum_capacity, minimum_capacity) 
+VALUES (607, 203, 226, 4, 1); 
+
+INSERT INTO rooms (id_room, number_room, id_department, maximum_capacity, minimum_capacity) 
+VALUES (608, 204, 224, 6, 1);    
+
+
+INSERT INTO rooms (id_room, number_room, id_department, maximum_capacity, minimum_capacity) 
+VALUES (609, 301, 119, 5, 1);  
+
+INSERT INTO rooms (id_room, number_room, id_department, maximum_capacity, minimum_capacity) 
+VALUES (610, 302, 225, 2, 1); 
+
+INSERT INTO rooms (id_room, number_room, id_department, maximum_capacity, minimum_capacity) 
+VALUES (611, 303, 116, 6, 1); 
+
+INSERT INTO rooms (id_room, number_room, id_department, maximum_capacity, minimum_capacity) 
+VALUES (612, 304, 228, 1, 1); 
+
+
+
+
+--------------------------
+--add value to table accommodations
+
+
+
+
+
+INSERT INTO accommodations (id_accommodation, id_patient, id_room, entry_time, exit_time) 
+VALUES (701, 301, 601, TO_TIMESTAMP('2026-03-15 08:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-03-15 14:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+
+INSERT INTO accommodations (id_accommodation, id_patient, id_room, entry_time, exit_time) 
+VALUES (702, 302, 602, TO_TIMESTAMP('2026-03-17 10:30:00', 'YYYY-MM-DD HH24:MI:SS'), NULL);
+
+INSERT INTO accommodations (id_accommodation, id_patient, id_room, entry_time, exit_time) 
+VALUES (703, 310, 603, TO_TIMESTAMP('2026-03-16 09:15:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-03-18 11:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+
+
+INSERT INTO accommodations (id_accommodation, id_patient, id_room, entry_time, exit_time) 
+VALUES (704, 305, 605, TO_TIMESTAMP('2026-03-18 07:45:00', 'YYYY-MM-DD HH24:MI:SS'), NULL);
+
+INSERT INTO accommodations (id_accommodation, id_patient, id_room, entry_time, exit_time) 
+VALUES (705, 306, 606, TO_TIMESTAMP('2026-03-14 20:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-03-16 16:30:00', 'YYYY-MM-DD HH24:MI:SS'));
+
+INSERT INTO accommodations (id_accommodation, id_patient, id_room, entry_time, exit_time) 
+VALUES (706, 307, 608, TO_TIMESTAMP('2026-03-17 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), NULL);
+
+
+INSERT INTO accommodations (id_accommodation, id_patient, id_room, entry_time, exit_time) 
+VALUES (707, 303, 601, TO_TIMESTAMP('2026-03-18 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-03-18 13:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+
+INSERT INTO accommodations (id_accommodation, id_patient, id_room, entry_time, exit_time) 
+VALUES (708, 308, 607, TO_TIMESTAMP('2026-03-15 11:00:00', 'YYYY-MM-DD HH24:MI:SS'), TO_TIMESTAMP('2026-03-17 09:00:00', 'YYYY-MM-DD HH24:MI:SS'));
+
+
+------------------------------------------------------------------
+--create view to table doctor 
+
+
+CREATE VIEW doctors_info_gaza AS
+select do.id_employee  ,e.first_name ||' '|| e.last_name   as full_name , e.salary * 12 as salary_years , do.degree , do.id_specialization , s.name_specialization
+from doctors do  JOIN employees e
+on(do.id_employee = e.id_employee)  join specializations s on(do.id_specialization = s.id_specialization);
+
+select * from doctors_info_gaza;
+
+
+---------------------------------------------------
+--join
+select do.id_employee  ,e.first_name ||' '|| e.last_name   as full_name , e.salary * 12 as salary_years , do.degree , do.id_specialization , s.name_specialization
+from doctors do  JOIN employees e
+on(do.id_employee = e.id_employee)  join specializations s on(do.id_specialization = s.id_specialization);
